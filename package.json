@@ -22,7 +22,7 @@
     "@aura-ui/icon-button": "0.0.2",
     "@aura-ui/input": "0.0.2",
     "@aura-ui/layout": "0.0.2",
-    "@aura-ui/react": "0.0.3-alpha.5",
+    "@aura-ui/react": "0.0.5-alpha.2",
     "@aura-ui/typography": "0.0.2",
     "@fontsource/inter": "4.5.14",
     "@radix-ui/colors": "0.1.8",
