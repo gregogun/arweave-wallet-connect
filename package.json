@@ -1,7 +1,14 @@
 {
-  "name": "arweave-wallet-ui",
-  "version": "0.1.0",
-  "private": true,
+  "name": "arweave-wallet-ui-test",
+  "version": "0.0.1",
+  "description": "A high quality, accessible and highly customizable React UI library",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/**"
+  ],
   "scripts": {
     "build": "tsup src/index.tsx --format esm,cjs --dts --external react",
     "dev": "next dev",
@@ -52,5 +59,9 @@
     "react-dom": "18.2.0",
     "tsup": "5.11.7",
     "typescript": "4.6.4"
+  },
+  "peerDependencies": {
+    "react": "^16.8 || ^17.0 || ^18.0",
+    "react-dom": "^16.8 || ^17.0 || ^18.0"
   }
 }
