@@ -229,7 +229,10 @@ export const ConnectWalletDialog = (props: ConnectWalletDialogProps) => {
           )}
         </Flex>
         <Typography css={{ my: '$2' }} size="2">
-          New to arweave wallets? <Link href="">Learn more</Link>
+          New to arweave wallets?{' '}
+          <Link href="https://arweave.app/" external>
+            Learn more
+          </Link>
         </Typography>
       </DialogContent>
     </Dialog>
