@@ -9,7 +9,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuPortal,
   DropdownMenuTrigger,
 } from '@aura-ui/react';
 import { Image } from './Image';
@@ -32,31 +31,18 @@ export interface ConnectWalletProps {
 }
 
 export const ConnectWallet = (props: ConnectWalletProps) => {
-  const [showConnectDialog, setShowConnectDialog] = useState(false);
-  const [showProfileDialog, setShowProfileDialog] = useState(false);
   const { setState, account, walletAddress, connecting, vouched } = useAuth();
   const { connectButtonLabel, permissions } = props;
 
   const label = connectButtonLabel ? connectButtonLabel : 'Connect Wallet';
   const username = account?.profile.name ? account.profile.name : walletAddress;
 
-  React.useEffect(() => {
-    console.log(account);
-  }, [account]);
-
   const user = account ? account : walletAddress;
-
-  const handleShowConnectDialog = () => setShowConnectDialog(true);
-  const handleCancelConnectDialog = () => setShowConnectDialog(false);
-
-  const handleShowProfileDialog = () => setShowProfileDialog(true);
-  const handleCancelProfileDialog = () => setShowProfileDialog(false);
 
   const handleDisconnect = () => {
     window.arweaveWallet.disconnect().then(() => {
       setState({ walletAddress: '' });
     });
-    setShowConnectDialog(false);
   };
 
   return (
@@ -93,12 +79,27 @@ export const ConnectWallet = (props: ConnectWalletProps) => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent sideOffset={8}>
-            <StyledDropdownMenuItem onClick={handleShowProfileDialog}>
-              <Box as="span">
-                <PersonIcon />
-              </Box>
-              Profile
-            </StyledDropdownMenuItem>
+            <ProfileDialog account={account}>
+              <Button
+                variant="ghost"
+                css={{
+                  alignItems: 'center',
+                  justifyContent: 'start',
+                  gap: '$2',
+                  px: '$3',
+                  fontSize: '$2',
+                  lineHeight: '$2',
+                  maxHeight: 32,
+                  fontWeight: '$4',
+                  color: '$slate12',
+                }}
+              >
+                <Box as="span">
+                  <PersonIcon />
+                </Box>
+                Profile
+              </Button>
+            </ProfileDialog>
             <StyledDropdownMenuItem color="red" onClick={handleDisconnect}>
               <Box as="span" css={{ display: 'inline-flex' }}>
                 <ExitIcon />
@@ -106,24 +107,12 @@ export const ConnectWallet = (props: ConnectWalletProps) => {
               Disconnect
             </StyledDropdownMenuItem>
           </DropdownMenuContent>
-
-          <ProfileDialog
-            open={showProfileDialog}
-            onClose={handleCancelProfileDialog}
-            account={account}
-          />
         </DropdownMenu>
       ) : (
         <>
-          <Button disabled={connecting} onClick={handleShowConnectDialog}>
-            {connecting ? 'Connecting...' : label}
-          </Button>
-
-          <ConnectWalletDialog
-            open={showConnectDialog}
-            onClose={handleCancelConnectDialog}
-            permissions={permissions}
-          />
+          <ConnectWalletDialog permissions={permissions}>
+            <Button disabled={connecting}>{connecting ? 'Connecting...' : label}</Button>
+          </ConnectWalletDialog>
         </>
       )}
     </>

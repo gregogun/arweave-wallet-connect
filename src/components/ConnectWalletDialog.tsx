@@ -7,6 +7,7 @@ import {
   DialogOverlay,
   Button,
   IconButton,
+  DialogTrigger,
 } from '@aura-ui/react';
 import { Typography } from './Typography';
 import { Flex } from './Flex';
@@ -72,15 +73,14 @@ const WalletItem = ({
 };
 
 interface ConnectWalletDialogProps {
-  open: boolean;
-  onClose: () => void;
   permissions: PermissionType[];
+  children: React.ReactNode;
 }
 
 export const ConnectWalletDialog = (props: ConnectWalletDialogProps) => {
   const [addresses, setAddresses] = useState<string[]>();
   const { setState } = useAuth();
-  const { permissions, open, onClose } = props;
+  const { children, permissions } = props;
 
   const connectWithArweaveApp = async () => {
     await connect();
@@ -156,11 +156,13 @@ export const ConnectWalletDialog = (props: ConnectWalletDialogProps) => {
   const handleCompleteConnect = (address: string) => completeConnection(address);
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <Dialog>
+      <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogOverlay />
       <DialogContent
         css={{
           maxWidth: 320,
+          left: '50%',
           px: '$5',
           py: '$3',
           display: 'flex',
@@ -218,12 +220,9 @@ export const ConnectWalletDialog = (props: ConnectWalletDialogProps) => {
           ) : (
             <>
               {walletItems.map((wallet) => (
-                <WalletItem
-                  key={wallet.name}
-                  connect={handleConnect}
-                  name={wallet.name}
-                  logo={wallet.logo}
-                />
+                <DialogClose key={wallet.name} asChild>
+                  <WalletItem connect={handleConnect} name={wallet.name} logo={wallet.logo} />
+                </DialogClose>
               ))}
             </>
           )}

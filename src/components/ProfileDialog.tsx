@@ -1,14 +1,9 @@
+import { DialogOverlay, DialogTrigger } from '@aura-ui/react';
 import { GitHubLogoIcon, TwitterLogoIcon } from '@radix-ui/react-icons';
 import { ArAccount } from 'arweave-account';
-import { useEffect } from 'react';
 import { config } from '../config';
-import { styled } from '../stitches.config';
-import { Box } from './Box';
-import { Dialog, DialogContent } from './Dialog';
-import { Flex } from './Flex';
-import { IconButton } from './IconButton';
+import { styled, Box, Dialog, DialogContent, Flex, IconButton, Typography } from '@aura-ui/react';
 import { Image } from './Image';
-import { Typography } from './Typography';
 
 const BlueIconButton = styled(IconButton, {
   $$bg: '$colors$blue3',
@@ -33,19 +28,21 @@ const BlueIconButton = styled(IconButton, {
 });
 
 interface ProfileDialogProps {
-  open: boolean;
-  onClose: () => void;
   account: ArAccount | undefined;
+  children: React.ReactNode;
 }
 
-export const ProfileDialog = ({ account, open, onClose }: ProfileDialogProps) => {
+export const ProfileDialog = ({ children, account }: ProfileDialogProps) => {
   const links = account?.profile.links;
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <Dialog>
+      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogOverlay />
       <DialogContent
         css={{
           maxWidth: 450,
+          left: '50%',
           boxShadow: '0 0 0 2px $colors$slate6',
           display: 'flex',
           flexDirection: 'column',
