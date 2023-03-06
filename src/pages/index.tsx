@@ -1,7 +1,6 @@
 // import { Button } from '@aura-ui/button';
 import { ConnectWallet } from '../components';
-import { Box } from '@aura-ui/layout';
-import { Flex } from '../components/Flex';
+import { Flex } from '@aura-ui/react';
 
 export default function Home() {
   return (

@@ -1,8 +1,5 @@
 import * as React from 'react';
-import { Button } from './Button';
-import { Flex } from './Flex';
 import { PermissionType } from 'arconnect';
-import { useState } from 'react';
 import { ConnectWalletDialog } from './ConnectWalletDialog';
 import { useAuth } from '../hooks/useAuth';
 import {
@@ -10,11 +7,13 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  Box,
+  Button,
+  Flex,
 } from '@aura-ui/react';
 import { Image } from './Image';
 import { config } from '../config';
 import { abbreviateAddress } from '../utils';
-import { Box } from './Box';
 import { ChevronDownIcon, ExitIcon, PersonIcon } from '@radix-ui/react-icons';
 import { ProfileDialog } from './ProfileDialog';
 import { styled } from '../stitches.config';

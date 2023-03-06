@@ -8,14 +8,15 @@ import {
   Button,
   IconButton,
   DialogTrigger,
+  Flex,
+  Box,
+  Typography,
+  Link,
 } from '@aura-ui/react';
-import { Typography } from './Typography';
-import { Flex } from './Flex';
 import { PermissionType } from 'arconnect';
 import { Cross2Icon } from '@radix-ui/react-icons';
 import { connect, getAccount, webWallet } from '../lib';
 import { useAuth } from '../hooks/useAuth';
-import { Box } from './Box';
 import { Image } from './Image';
 import { useState } from 'react';
 import { abbreviateAddress, accountFromAddress } from '../utils';
@@ -228,10 +229,7 @@ export const ConnectWalletDialog = (props: ConnectWalletDialogProps) => {
           )}
         </Flex>
         <Typography css={{ my: '$2' }} size="2">
-          New to arweave wallets?{' '}
-          <Box css={{ fontWeight: 600, textDecoration: 'underline' }} as="span">
-            Learn more
-          </Box>
+          New to arweave wallets? <Link href="">Learn more</Link>
         </Typography>
       </DialogContent>
     </Dialog>

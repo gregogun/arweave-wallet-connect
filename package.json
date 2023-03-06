@@ -10,7 +10,7 @@
     "dist/**"
   ],
   "scripts": {
-    "build": "tsup src/index.tsx --format esm,cjs --dts --external react",
+    "build": "tsup src/index.ts --format esm,cjs --dts --external react",
     "dev": "next dev",
     "clean": "rm -rf node_modules && rm -rf dist",
     "storybook": "start-storybook -p 6006",
