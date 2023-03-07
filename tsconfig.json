@@ -2,10 +2,7 @@
   "compilerOptions": {
     "target": "es5",
     "module": "esnext",
-    "lib": [
-      "dom",
-      "esnext"
-    ],
+    "lib": ["dom", "esnext"],
     "declaration": true,
     "sourceMap": true,
     "moduleResolution": "node",
@@ -26,15 +23,8 @@
     "declarationMap": true,
     "allowJs": true,
     "forceConsistentCasingInFileNames": true,
-    "noEmit": true,
-    "incremental": true
+    "noEmit": true
   },
-  "include": [
-    "src",
-    "index.ts"
-  ],
-  "exclude": [
-    "dist",
-    "node_modules"
-  ]
+  "include": ["src", "index.ts"],
+  "exclude": ["dist", "node_modules"]
 }

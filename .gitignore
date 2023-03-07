@@ -35,6 +35,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+#build
+dist/
+
 #arweave
 wallet.json
 keyfile.json
