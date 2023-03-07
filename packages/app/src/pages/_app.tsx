@@ -1,7 +1,5 @@
 import type { AppProps } from 'next/app';
-import { AuthProvider } from '../hooks/useAuth';
-import '@fontsource/inter/400.css';
-import '@fontsource/inter/600.css';
+import { ConnectProvider } from 'arweave-wallet-ui-test';
 import { ThemeProvider } from 'next-themes';
 import { darkTheme, globalCss } from '@aura-ui/react';
 
@@ -34,7 +32,7 @@ globalStyles();
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
-    <AuthProvider>
+    <ConnectProvider>
       <ThemeProvider
         disableTransitionOnChange
         attribute="class"
@@ -42,6 +40,6 @@ export default function App({ Component, pageProps }: AppProps) {
       >
         <Component {...pageProps} />
       </ThemeProvider>
-    </AuthProvider>
+    </ConnectProvider>
   );
 }

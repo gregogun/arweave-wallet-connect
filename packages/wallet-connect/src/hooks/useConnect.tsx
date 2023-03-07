@@ -2,7 +2,7 @@ import { ArAccount } from 'arweave-account';
 import React, { useState } from 'react';
 import { Vouched } from '../types';
 
-const AuthContext = React.createContext<{
+const ConnectContext = React.createContext<{
   walletAddress?: string;
   account?: ArAccount;
   connecting?: boolean;
@@ -17,11 +17,11 @@ const AuthContext = React.createContext<{
   >;
 }>({ connecting: false, setState: () => {} });
 
-interface AuthProviderProps {
+interface ConnectProviderProps {
   children: React.ReactNode;
 }
 
-const AuthProvider = ({ children }: AuthProviderProps) => {
+const ConnectProvider = ({ children }: ConnectProviderProps) => {
   const [state, setState] = useState<{
     connecting?: boolean;
     walletAddress?: string;
@@ -32,7 +32,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
   });
 
   return (
-    <AuthContext.Provider
+    <ConnectContext.Provider
       value={{
         walletAddress: state.walletAddress,
         account: state.account,
@@ -42,10 +42,10 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
       }}
     >
       {children}
-    </AuthContext.Provider>
+    </ConnectContext.Provider>
   );
 };
 
-const useAuth = () => React.useContext(AuthContext);
+const useConnect = () => React.useContext(ConnectContext);
 
-export { AuthProvider, useAuth };
+export { ConnectProvider, useConnect };

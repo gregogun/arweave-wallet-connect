@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { PermissionType } from 'arconnect';
 import { ConnectWalletDialog } from './ConnectWalletDialog';
-import { useAuth } from '../hooks/useAuth';
+import { useConnect } from '../hooks/useConnect';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,13 +10,13 @@ import {
   Box,
   Button,
   Flex,
+  styled,
 } from '@aura-ui/react';
 import { Image } from './Image';
-import { config } from '../config';
+import { config } from '../utils/config';
 import { abbreviateAddress } from '../utils';
 import { ChevronDownIcon, ExitIcon, PersonIcon } from '@radix-ui/react-icons';
 import { ProfileDialog } from './ProfileDialog';
-import { styled } from '../stitches.config';
 
 const StyledDropdownMenuItem = styled(DropdownMenuItem, {
   justifyContent: 'start',
@@ -30,7 +30,7 @@ export interface ConnectWalletProps {
 }
 
 export const ConnectWallet = (props: ConnectWalletProps) => {
-  const { setState, account, walletAddress, connecting, vouched } = useAuth();
+  const { setState, account, walletAddress, connecting, vouched } = useConnect();
   const { connectButtonLabel, permissions } = props;
 
   const label = connectButtonLabel ? connectButtonLabel : 'Connect Wallet';

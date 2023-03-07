@@ -1,3 +1,4 @@
+import * as React from 'react';
 import {
   DialogOverlay,
   DialogTrigger,
@@ -12,7 +13,7 @@ import {
 } from '@aura-ui/react';
 import { GitHubLogoIcon, TwitterLogoIcon } from '@radix-ui/react-icons';
 import { ArAccount } from 'arweave-account';
-import { config } from '../config';
+import { config } from '../utils/config';
 import { Image } from './Image';
 
 const BlueIconButton = styled(IconButton, {

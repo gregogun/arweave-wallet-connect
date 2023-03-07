@@ -1,3 +1,4 @@
+import * as React from 'react';
 import {
   Dialog,
   DialogClose,
@@ -9,18 +10,17 @@ import {
   IconButton,
   DialogTrigger,
   Flex,
-  Box,
   Typography,
   Link,
 } from '@aura-ui/react';
 import { PermissionType } from 'arconnect';
 import { Cross2Icon } from '@radix-ui/react-icons';
 import { connect, getAccount, webWallet } from '../lib';
-import { useAuth } from '../hooks/useAuth';
+import { useConnect } from '../hooks/useConnect';
 import { Image } from './Image';
 import { useState } from 'react';
 import { abbreviateAddress, accountFromAddress } from '../utils';
-import { config } from '../config';
+import { config } from '../utils/config';
 
 interface WalletItemProps {
   name: string;
@@ -80,7 +80,7 @@ interface ConnectWalletDialogProps {
 
 export const ConnectWalletDialog = (props: ConnectWalletDialogProps) => {
   const [addresses, setAddresses] = useState<string[]>();
-  const { setState } = useAuth();
+  const { setState } = useConnect();
   const { children, permissions } = props;
 
   const connectWithArweaveApp = async () => {

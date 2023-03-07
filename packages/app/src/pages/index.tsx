@@ -1,5 +1,4 @@
-// import { Button } from '@aura-ui/button';
-import { ConnectWallet } from '../components';
+import { ConnectWallet } from 'arweave-wallet-ui-test';
 import { Flex } from '@aura-ui/react';
 
 export default function Home() {
