@@ -11,12 +11,15 @@ import {
   Button,
   Flex,
   styled,
+  CSS,
+  ButtonExtendedProps,
 } from '@aura-ui/react';
 import { Image } from './Image';
 import { config } from '../utils/config';
 import { abbreviateAddress } from '../utils';
 import { ChevronDownIcon, ExitIcon, PersonIcon } from '@radix-ui/react-icons';
 import { ProfileDialog } from './ProfileDialog';
+import ArweaveAccount from 'arweave-account';
 
 const StyledDropdownMenuItem = styled(DropdownMenuItem, {
   justifyContent: 'start',
@@ -26,15 +29,27 @@ const StyledDropdownMenuItem = styled(DropdownMenuItem, {
 
 export interface ConnectWalletProps {
   connectButtonLabel?: string;
+  connectButtonStyles?: CSS;
+  connectButtonVariant?: ButtonExtendedProps['variant'];
+  connectButtonSize?: ButtonExtendedProps['size'];
+  connectButtonColorScheme?: ButtonExtendedProps['colorScheme'];
   permissions: PermissionType[];
+  arweaveAccount: ArweaveAccount;
 }
 
 export const ConnectWallet = (props: ConnectWalletProps) => {
   const { setState, account, walletAddress, connecting, vouched } = useConnect();
-  const { connectButtonLabel, permissions } = props;
+  const {
+    connectButtonLabel,
+    connectButtonStyles,
+    connectButtonVariant: variant,
+    connectButtonSize: size,
+    connectButtonColorScheme: colorScheme,
+    permissions,
+    arweaveAccount,
+  } = props;
 
   const label = connectButtonLabel ? connectButtonLabel : 'Connect Wallet';
-  const username = account?.profile.name ? account.profile.name : walletAddress;
 
   const user = account ? account : walletAddress;
 
@@ -49,7 +64,12 @@ export const ConnectWallet = (props: ConnectWalletProps) => {
       {user ? (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button css={{ display: 'flex', gap: '$4' }}>
+            <Button
+              variant={variant}
+              size={size}
+              colorScheme={colorScheme}
+              css={{ display: 'flex', gap: '$4', ...connectButtonStyles }}
+            >
               {account ? (
                 <Flex as="span" align="center" gap="2">
                   <Image
@@ -109,8 +129,18 @@ export const ConnectWallet = (props: ConnectWalletProps) => {
         </DropdownMenu>
       ) : (
         <>
-          <ConnectWalletDialog permissions={permissions}>
-            <Button disabled={connecting}>{connecting ? 'Connecting...' : label}</Button>
+          <ConnectWalletDialog arweaveAccount={arweaveAccount} permissions={permissions}>
+            <Button
+              variant={variant}
+              size={size}
+              colorScheme={colorScheme}
+              css={{
+                ...connectButtonStyles,
+              }}
+              disabled={connecting}
+            >
+              {connecting ? 'Connecting...' : label}
+            </Button>
           </ConnectWalletDialog>
         </>
       )}

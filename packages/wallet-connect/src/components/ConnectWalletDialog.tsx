@@ -21,6 +21,7 @@ import { Image } from './Image';
 import { useState } from 'react';
 import { abbreviateAddress, accountFromAddress } from '../utils';
 import { config } from '../utils/config';
+import ArweaveAccount from 'arweave-account';
 
 interface WalletItemProps {
   name: string;
@@ -76,12 +77,13 @@ const WalletItem = ({
 interface ConnectWalletDialogProps {
   permissions: PermissionType[];
   children: React.ReactNode;
+  arweaveAccount: ArweaveAccount;
 }
 
 export const ConnectWalletDialog = (props: ConnectWalletDialogProps) => {
   const [addresses, setAddresses] = useState<string[]>();
   const { setState } = useConnect();
-  const { children, permissions } = props;
+  const { children, permissions, arweaveAccount } = props;
 
   const connectWithArweaveApp = async () => {
     await connect();
@@ -141,7 +143,7 @@ export const ConnectWalletDialog = (props: ConnectWalletDialogProps) => {
   };
 
   const completeConnection = async (address: string) => {
-    await accountFromAddress(address)
+    await accountFromAddress(address, arweaveAccount)
       .then((account) => {
         if (account) {
           setState({ walletAddress: address, account, connecting: false });

@@ -1,15 +1,7 @@
-import Arweave from 'arweave';
 import { ArweaveWebWallet } from 'arweave-wallet-connector';
-import ArweaveAccount, { ArAccount } from 'arweave-account';
-import { Account } from '../types';
+import ArweaveAccount from 'arweave-account';
 
-export const arweave = Arweave.init({
-  host: 'localhost',
-  port: 1984,
-  protocol: 'http',
-});
-
-export const webWallet = new ArweaveWebWallet({
+export const webWallet: any = new ArweaveWebWallet({
   name: 'wavehub',
   logo: `${typeof window !== 'undefined' && window.location.origin}/img/logo_text.svg`,
 });
@@ -19,11 +11,9 @@ export const connect = () => {
   return webWallet.connect();
 };
 
-export const account = new ArweaveAccount();
-
-export const getAccount = async (address: string) => {
+export const getAccount = async (address: string, account: ArweaveAccount) => {
   try {
-    const acc: ArAccount = await account.get(address);
+    const acc = await account.get(address);
     if (acc) {
       return acc;
     }
@@ -32,7 +22,7 @@ export const getAccount = async (address: string) => {
   }
 };
 
-export const getAccountHandle = async (handle: string) => {
+export const getAccountHandle = async (handle: string, account: ArweaveAccount) => {
   console.log(handle);
   return await account.search(handle);
 };

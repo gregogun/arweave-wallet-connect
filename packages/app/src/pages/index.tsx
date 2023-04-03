@@ -9,7 +9,11 @@ export default function Home() {
         mt: '$16',
       }}
     >
-      <ConnectWallet permissions={['ACCESS_ADDRESS', 'ACCESS_ALL_ADDRESSES']} />
+      <ConnectWallet
+        permissions={['ACCESS_ADDRESS', 'ACCESS_ALL_ADDRESSES']}
+        connectButtonColorScheme="indigo"
+        connectButtonVariant="solid"
+      />
     </Flex>
   );
 }
