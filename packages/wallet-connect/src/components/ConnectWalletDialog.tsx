@@ -118,10 +118,11 @@ export const ConnectWalletDialog = (props: ConnectWalletDialogProps) => {
 
     if (permissions.includes('ACCESS_ALL_ADDRESSES')) {
       const addresses = await window.arweaveWallet.getAllAddresses();
-      console.log(addresses);
 
       if (addresses.length > 1) {
         setAddresses(addresses);
+      } else {
+        completeConnection(address);
       }
     } else {
       completeConnection(address);
@@ -137,7 +138,7 @@ export const ConnectWalletDialog = (props: ConnectWalletDialogProps) => {
         await connectWithArconnect();
       }
     } catch (e) {
-      console.log('error', e);
+      console.error('error', e);
       setState({ connecting: false });
     }
   };
