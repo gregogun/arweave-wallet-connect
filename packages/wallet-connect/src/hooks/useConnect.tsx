@@ -1,18 +1,20 @@
 import { ArAccount } from 'arweave-account';
 import React, { useState } from 'react';
-import { Vouched } from '../types';
+import { ArweaveConfig, Vouched } from '../types';
 
 const ConnectContext = React.createContext<{
   walletAddress?: string;
   account?: ArAccount;
   connecting?: boolean;
   vouched?: Vouched;
+  config?: ArweaveConfig;
   setState: React.Dispatch<
     React.SetStateAction<{
       connecting?: boolean;
       walletAddress?: string | undefined;
       account?: ArAccount | undefined;
       vouched?: Vouched | undefined;
+      config?: ArweaveConfig | undefined;
     }>
   >;
 }>({ connecting: false, setState: () => {} });
@@ -27,6 +29,7 @@ const ConnectProvider = ({ children }: ConnectProviderProps) => {
     walletAddress?: string;
     account?: ArAccount;
     vouched?: Vouched;
+    config?: ArweaveConfig;
   }>({
     connecting: false,
   });
@@ -39,6 +42,7 @@ const ConnectProvider = ({ children }: ConnectProviderProps) => {
         connecting: state.connecting,
         setState: setState,
         vouched: state.vouched,
+        config: state.config,
       }}
     >
       {children}

@@ -73,6 +73,7 @@ export const accountFromAddress = async (
   account: ArweaveAccount
 ): Promise<ArAccount | undefined> => {
   const userAccount = await getAccount(address, account);
+  console.log(userAccount);
 
   return userAccount;
 };

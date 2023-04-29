@@ -12,91 +12,125 @@ import {
   Flex,
   Typography,
   Link,
+  DialogPortal,
 } from '@aura-ui/react';
 import { PermissionType } from 'arconnect';
 import { Cross2Icon } from '@radix-ui/react-icons';
-import { connect, getAccount, webWallet } from '../lib';
 import { useConnect } from '../hooks/useConnect';
 import { Image } from './Image';
 import { useState } from 'react';
 import { abbreviateAddress, accountFromAddress } from '../utils';
 import { config } from '../utils/config';
 import ArweaveAccount from 'arweave-account';
+import { ArweaveWebWallet } from 'arweave-wallet-connector';
+import { ArweaveConfig, ArweaveWalletProps } from '../types';
+import { ArweaveLogo } from '../Icons/ArweaveLogo';
+// import { isVouched } from 'vouchdao';
 
-interface WalletItemProps {
-  name: string;
+const arweaveWallet = (props: ArweaveWalletProps) => {
+  const { iframeParentNode, logo, name, url = 'arweave.app' } = props;
+
+  const state = { url: url };
+  const appInfo = { iframeParentNode, logo, name };
+  const wallet = new ArweaveWebWallet(appInfo, { state });
+
+  return wallet;
+};
+
+interface WalletServiceProps {
+  name: 'Arweave.app' | 'Arconnect';
   logo: any;
 }
 
-const walletItems: WalletItemProps[] = [
+const walletItems: WalletServiceProps[] = [
   {
     name: 'Arconnect',
-    logo: 'https://github.com/arconnectio/ArConnect/blob/development/public/icons/logo256.png?raw=true',
+    logo: 'https://arweave.net/dKJd2vi7RXG3kxaotGDLD6VZjLn58AD4xan5L9cN9es',
   },
   {
     name: 'Arweave.app',
-    logo: 'https://github.com/jfbeats/ArweaveWebWallet/blob/master/public/arweave-512.png?raw=true',
+    logo: 'https://arweave.net/9ENUQI5qIZDH5C9Ot7SjgRRgKwNIMETanueDKudxIRU',
   },
 ];
 
 interface WalletItemProps {
-  name: string;
-  logo: any;
-  connect?: (name: string) => void;
-}
-
-const WalletItem = ({
-  name,
-  logo,
-  connect,
-}: {
-  name: string;
+  name: string | WalletServiceProps['name'];
   logo: any;
   connect: (name: string) => void;
-}) => {
-  return (
-    <Button
-      onClick={() => connect(name)}
-      variant="ghost"
-      css={{ p: '$2', alignItems: 'center', gap: '$2', justifyContent: 'start' }}
-      size="3"
-    >
-      <Image
+}
+
+const WalletItem = React.forwardRef<HTMLButtonElement, WalletItemProps>(
+  ({ name, logo, connect }, ref) => {
+    return (
+      <Button
+        onClick={() => connect(name)}
+        variant="ghost"
         css={{
-          filter: name === 'Arweave.app' ? 'invert(1)' : 'none',
+          p: '$2',
+          alignItems: 'center',
+          gap: '$2',
+          justifyContent: 'start',
+          '& svg': { size: '$7', color: '$slate12' },
         }}
-        src={logo}
-      />
-      <Typography size="3" weight="6">
-        {name}
-      </Typography>
-    </Button>
-  );
-};
+        size="3"
+        ref={ref}
+      >
+        {name === 'Arweave.app' ? <ArweaveLogo width={50} height={50} /> : <Image src={logo} />}
+        <Typography
+          colorScheme={name === 'Arconnect' ? 'violet' : 'slate'}
+          contrast={name === 'Arweave.app' ? 'hiContrast' : undefined}
+          size="3"
+          weight="6"
+        >
+          {name}
+        </Typography>
+      </Button>
+    );
+  }
+);
 
 interface ConnectWalletDialogProps {
   permissions: PermissionType[];
   children: React.ReactNode;
   arweaveAccount: ArweaveAccount;
+  arweaveWalletProps: ArweaveWalletProps | undefined;
+  appName?: string;
+  arconnectLogo?: string;
+  arweaveAppLogo?: string;
 }
 
 export const ConnectWalletDialog = (props: ConnectWalletDialogProps) => {
   const [addresses, setAddresses] = useState<string[]>();
   const { setState } = useConnect();
-  const { children, permissions, arweaveAccount } = props;
+  const {
+    children,
+    permissions,
+    arweaveAccount,
+    arweaveWalletProps,
+    appName,
+    arconnectLogo,
+    arweaveAppLogo,
+  } = props;
+
+  const webWallet = arweaveWallet({ name: appName, ...arweaveWalletProps });
 
   const connectWithArweaveApp = async () => {
-    await connect();
+    webWallet.setUrl('https://arweave.app');
+    await webWallet.connect();
 
-    const address = await webWallet.address;
+    const address = webWallet.address;
+
+    const config = (await webWallet.getArweaveConfig()) as ArweaveConfig;
 
     if (!address) {
+      console.log('disconnected');
+
       throw new Error(
         'Oops something went wrong when connecting with Arweave.app! Please try again.'
       );
     }
 
-    completeConnection(address);
+    completeConnection(address, config);
   };
 
   const connectWithArconnect = async () => {
@@ -116,16 +150,18 @@ export const ConnectWalletDialog = (props: ConnectWalletDialogProps) => {
 
     const address = await window.arweaveWallet.getActiveAddress();
 
+    const config = (await window.arweaveWallet.getArweaveConfig()) as ArweaveConfig;
+
     if (permissions.includes('ACCESS_ALL_ADDRESSES')) {
       const addresses = await window.arweaveWallet.getAllAddresses();
 
       if (addresses.length > 1) {
         setAddresses(addresses);
       } else {
-        completeConnection(address);
+        completeConnection(address, config);
       }
     } else {
-      completeConnection(address);
+      completeConnection(address, config);
     }
   };
 
@@ -143,13 +179,15 @@ export const ConnectWalletDialog = (props: ConnectWalletDialogProps) => {
     }
   };
 
-  const completeConnection = async (address: string) => {
+  const completeConnection = async (address: string, config?: ArweaveConfig) => {
+    // const vouched = await isVouched(address);
+
     await accountFromAddress(address, arweaveAccount)
       .then((account) => {
         if (account) {
-          setState({ walletAddress: address, account, connecting: false });
+          setState({ walletAddress: address, account, config: config, connecting: false });
         } else {
-          setState({ walletAddress: address, connecting: false });
+          setState({ walletAddress: address, config: config, connecting: false });
         }
       })
       .catch((err) => {
@@ -159,85 +197,104 @@ export const ConnectWalletDialog = (props: ConnectWalletDialogProps) => {
 
   const handleCompleteConnect = (address: string) => completeConnection(address);
 
+  const name = appName ? appName : 'this app';
+
+  const walletLogo = (logo: 'Arweave.app' | 'Arconnect', defaultLogo: string) => {
+    let returnedLogo;
+    if (logo === 'Arweave.app') {
+      returnedLogo = arweaveAppLogo || defaultLogo;
+    } else {
+      returnedLogo = arconnectLogo || defaultLogo;
+    }
+
+    return returnedLogo;
+  };
+
   return (
     <Dialog>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogOverlay />
-      <DialogContent
-        css={{
-          maxWidth: 320,
-          left: '50%',
-          px: '$5',
-          py: '$3',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '$2',
-          textAlign: 'center',
-          br: '$4',
-        }}
-      >
-        <DialogClose asChild>
-          <IconButton
-            css={{
-              position: 'fixed',
-              top: 12,
-              right: 12,
-              br: '$round',
-            }}
-            aria-label="Close Dialog"
-            variant="ghost"
-            size="1"
-          >
-            <Cross2Icon />
-          </IconButton>
-        </DialogClose>
-        <DialogTitle asChild>
-          <Typography size="4" weight="6" contrast="hiContrast">
-            Connect a Wallet
-          </Typography>
-        </DialogTitle>
-        <DialogDescription asChild>
-          <Typography css={{ textAlign: 'center', my: '$3' }} size="2">
-            Choose a wallet to connect to <strong>Permadapp</strong>:
-          </Typography>
-        </DialogDescription>
-        <Flex
-          css={{ p: '$3', boxShadow: '0 0 0 1px $colors$slate6', br: '$4' }}
-          direction="column"
-          gap="3"
+      <DialogPortal>
+        <DialogOverlay />
+        <DialogContent
+          css={{
+            maxWidth: 320,
+            left: '50%',
+            px: '$5',
+            py: '$3',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '$2',
+            textAlign: 'center',
+            br: '$4',
+          }}
         >
-          {addresses ? (
-            <>
-              <Typography size="1">Connect with one of the following wallets:</Typography>
-              {addresses.map((address) => (
-                <WalletItem
-                  key={address}
-                  connect={() => handleCompleteConnect(address)}
-                  name={abbreviateAddress({
-                    address,
-                    options: { startChars: 10, endChars: 8, noOfEllipsis: 4 },
-                  })}
-                  logo={`${config.boringAvatars}/28/${address}`}
-                />
-              ))}
-            </>
-          ) : (
-            <>
-              {walletItems.map((wallet) => (
-                <DialogClose key={wallet.name} asChild>
-                  <WalletItem connect={handleConnect} name={wallet.name} logo={wallet.logo} />
-                </DialogClose>
-              ))}
-            </>
-          )}
-        </Flex>
-        <Typography css={{ my: '$2' }} size="2">
-          New to arweave wallets?{' '}
-          <Link href="https://arweave.app/" external>
-            Learn more
-          </Link>
-        </Typography>
-      </DialogContent>
+          <DialogClose asChild>
+            <IconButton
+              css={{
+                position: 'fixed',
+                top: 12,
+                right: 12,
+                br: '$round',
+              }}
+              aria-label="Close Dialog"
+              variant="ghost"
+              size="1"
+            >
+              <Cross2Icon />
+            </IconButton>
+          </DialogClose>
+          <DialogTitle asChild>
+            <Typography size="4" weight="6" contrast="hiContrast">
+              Connect a Wallet
+            </Typography>
+          </DialogTitle>
+          <DialogDescription asChild>
+            <Typography css={{ textAlign: 'center', my: '$3' }} size="2">
+              Choose a wallet to connect to <strong>{name}</strong>:
+            </Typography>
+          </DialogDescription>
+          <Flex
+            css={{ p: '$3', boxShadow: '0 0 0 1px $colors$slate6', br: '$4' }}
+            direction="column"
+            gap="3"
+          >
+            {addresses ? (
+              <>
+                <Typography size="1">Connect with one of the following wallets:</Typography>
+                {addresses.map((address) => (
+                  <WalletItem
+                    key={address}
+                    connect={() => handleCompleteConnect(address)}
+                    name={abbreviateAddress({
+                      address,
+                      options: { startChars: 10, endChars: 8, noOfEllipsis: 4 },
+                    })}
+                    logo={`${config.boringAvatars}/28/${address}`}
+                  />
+                ))}
+              </>
+            ) : (
+              <>
+                {walletItems.map((wallet) => (
+                  <DialogClose key={wallet.name} asChild>
+                    <WalletItem
+                      connect={handleConnect}
+                      name={wallet.name}
+                      logo={walletLogo(wallet.name, wallet.logo)}
+                    />
+                  </DialogClose>
+                ))}
+              </>
+            )}
+          </Flex>
+          <Typography css={{ my: '$2' }} size="2">
+            Don't have a wallet?{' '}
+            <Link href="https://arconnect.io/" external>
+              Get one here
+            </Link>
+          </Typography>
+        </DialogContent>
+      </DialogPortal>
     </Dialog>
   );
 };

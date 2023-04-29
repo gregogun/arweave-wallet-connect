@@ -2,30 +2,9 @@ import * as React from 'react';
 import { PermissionType } from 'arconnect';
 import { ConnectWalletDialog } from './ConnectWalletDialog';
 import { useConnect } from '../hooks/useConnect';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  Box,
-  Button,
-  Flex,
-  styled,
-  CSS,
-  ButtonExtendedProps,
-} from '@aura-ui/react';
-import { Image } from './Image';
-import { config } from '../utils/config';
-import { abbreviateAddress } from '../utils';
-import { ChevronDownIcon, ExitIcon, PersonIcon } from '@radix-ui/react-icons';
-import { ProfileDialog } from './ProfileDialog';
+import { Button, CSS, ButtonExtendedProps } from '@aura-ui/react';
 import ArweaveAccount from 'arweave-account';
-
-const StyledDropdownMenuItem = styled(DropdownMenuItem, {
-  justifyContent: 'start',
-  px: '$3',
-  gap: '$2',
-});
+import { ArweaveWalletProps } from '../types';
 
 export interface ConnectWalletProps {
   connectButtonLabel?: string;
@@ -35,6 +14,11 @@ export interface ConnectWalletProps {
   connectButtonColorScheme?: ButtonExtendedProps['colorScheme'];
   permissions: PermissionType[];
   arweaveAccount: ArweaveAccount;
+  arweaveWalletProps?: ArweaveWalletProps;
+  appName?: string;
+  appLogo?: string;
+  arconnectLogo?: string;
+  arweaveAppLogo?: string;
 }
 
 export const ConnectWallet = (props: ConnectWalletProps) => {
@@ -43,10 +27,14 @@ export const ConnectWallet = (props: ConnectWalletProps) => {
     connectButtonLabel,
     connectButtonStyles,
     connectButtonVariant: variant,
-    connectButtonSize: size,
+    connectButtonSize: size = '2',
     connectButtonColorScheme: colorScheme,
     permissions,
     arweaveAccount,
+    arweaveWalletProps,
+    appName,
+    arconnectLogo,
+    arweaveAppLogo,
   } = props;
 
   const label = connectButtonLabel ? connectButtonLabel : 'Connect Wallet';
@@ -62,87 +50,36 @@ export const ConnectWallet = (props: ConnectWalletProps) => {
   return (
     <>
       {user ? (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant={variant}
-              size={size}
-              colorScheme={colorScheme}
-              css={{ display: 'flex', gap: '$4', ...connectButtonStyles }}
-            >
-              {account ? (
-                <Flex as="span" align="center" gap="2">
-                  <Image
-                    css={{
-                      width: 24,
-                      height: 24,
-                    }}
-                    src={
-                      // check if no avatar or using account default avatar
-                      !account.profile.avatar ||
-                      account.profile.avatar === config.accountAvatarDefault
-                        ? `${config.gatewayUrl}/${account.profile.avatar}`
-                        : `${config.boringAvatars}/40/${walletAddress}`
-                    }
-                  />
-                  {account.profile.name ? account.profile.name : account.handle}
-                </Flex>
-              ) : !account && walletAddress ? (
-                <span>{abbreviateAddress({ address: walletAddress })}</span>
-              ) : (
-                <Box />
-              )}
-              <span>
-                <ChevronDownIcon />
-              </span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent sideOffset={8}>
-            <ProfileDialog account={account}>
-              <Button
-                variant="ghost"
-                css={{
-                  alignItems: 'center',
-                  justifyContent: 'start',
-                  gap: '$2',
-                  px: '$3',
-                  fontSize: '$2',
-                  lineHeight: '$2',
-                  maxHeight: 32,
-                  fontWeight: '$4',
-                  color: '$slate12',
-                }}
-              >
-                <Box as="span">
-                  <PersonIcon />
-                </Box>
-                Profile
-              </Button>
-            </ProfileDialog>
-            <StyledDropdownMenuItem color="red" onClick={handleDisconnect}>
-              <Box as="span" css={{ display: 'inline-flex' }}>
-                <ExitIcon />
-              </Box>
-              Disconnect
-            </StyledDropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <Button
+          variant={variant}
+          size={size}
+          colorScheme={colorScheme}
+          css={{ display: 'flex', gap: '$4', ...connectButtonStyles }}
+          onClick={handleDisconnect}
+        >
+          Disconnect
+        </Button>
       ) : (
-        <>
-          <ConnectWalletDialog arweaveAccount={arweaveAccount} permissions={permissions}>
-            <Button
-              variant={variant}
-              size={size}
-              colorScheme={colorScheme}
-              css={{
-                ...connectButtonStyles,
-              }}
-              disabled={connecting}
-            >
-              {connecting ? 'Connecting...' : label}
-            </Button>
-          </ConnectWalletDialog>
-        </>
+        <ConnectWalletDialog
+          arweaveAccount={arweaveAccount}
+          permissions={permissions}
+          arweaveWalletProps={arweaveWalletProps}
+          appName={appName}
+          arconnectLogo={arconnectLogo}
+          arweaveAppLogo={arweaveAppLogo}
+        >
+          <Button
+            variant={variant}
+            size={size}
+            colorScheme={colorScheme}
+            css={{
+              ...connectButtonStyles,
+            }}
+            disabled={connecting}
+          >
+            {connecting ? 'Connecting...' : label}
+          </Button>
+        </ConnectWalletDialog>
       )}
     </>
   );

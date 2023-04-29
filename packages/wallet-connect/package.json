@@ -19,7 +19,7 @@
     "prepublishOnly": "pnpm build"
   },
   "dependencies": {
-    "@aura-ui/react": "0.0.5-alpha.2",
+    "@aura-ui/react": "0.0.5-alpha.3",
     "@radix-ui/colors": "0.1.8",
     "@radix-ui/react-icons": "1.1.1",
     "@stitches/react": "1.2.8",
