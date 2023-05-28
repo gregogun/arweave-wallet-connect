@@ -238,11 +238,15 @@ export const ConnectWalletDialog = (props: ConnectWalletDialogProps) => {
           </DialogTitle>
           <DialogDescription asChild>
             <Typography css={{ textAlign: 'center', my: '$3' }} size="2">
-              Choose a wallet to connect to <strong>{name}</strong>:
+              Choose a wallet to connect to{' '}
+              <Typography size="2" as="span" weight="6" contrast="hiContrast">
+                {name}
+              </Typography>
+              :
             </Typography>
           </DialogDescription>
           <Flex
-            css={{ p: '$3', boxShadow: '0 0 0 1px $colors$slate6', br: '$4' }}
+            css={{ p: '$2', boxShadow: '0 0 0 1px $colors$slate5', br: '$4' }}
             direction="column"
             gap="3"
           >
