@@ -11,6 +11,4 @@ export default {
 
 // window.arweaveWallet.walletName = 'Arconnect';
 
-export const Default = () => (
-  <ConnectWallet arweaveAccount={account} permissions={['ACCESS_ADDRESS']} />
-);
+export const Default = () => <ConnectWallet permissions={['ACCESS_ADDRESS']} />;
