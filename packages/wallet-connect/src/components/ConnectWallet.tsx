@@ -7,39 +7,26 @@ import ArweaveAccount from 'arweave-account';
 import { ArweaveWalletProps } from '../types';
 
 export interface ConnectWalletProps {
-  connectButtonLabel?: string;
-  connectButtonStyles?: CSS;
-  connectButtonVariant?: ButtonExtendedProps['variant'];
-  connectButtonSize?: ButtonExtendedProps['size'];
-  connectButtonColorScheme?: ButtonExtendedProps['colorScheme'];
-  permissions: PermissionType[];
-  arweaveAccount: ArweaveAccount;
-  arweaveWalletProps?: ArweaveWalletProps;
   appName?: string;
+  permissions: PermissionType[];
   appLogo?: string;
-  arconnectLogo?: string;
-  arweaveAppLogo?: string;
+  options?: {
+    connectButtonLabel?: string;
+    connectButtonStyles?: CSS;
+    connectButtonVariant?: ButtonExtendedProps['variant'];
+    connectButtonSize?: ButtonExtendedProps['size'];
+    connectButtonColorScheme?: ButtonExtendedProps['colorScheme'];
+    arweaveWalletProps?: ArweaveWalletProps;
+  };
 }
 
 export const ConnectWallet = (props: ConnectWalletProps) => {
-  const { setState, account, walletAddress, connecting, vouched } = useConnect();
-  const {
-    connectButtonLabel,
-    connectButtonStyles,
-    connectButtonVariant: variant,
-    connectButtonSize: size = '2',
-    connectButtonColorScheme: colorScheme,
-    permissions,
-    arweaveAccount,
-    arweaveWalletProps,
-    appName,
-    arconnectLogo,
-    arweaveAppLogo,
-  } = props;
+  const { setState, profile, walletAddress, connecting, vouched } = useConnect();
+  const { options, permissions, appName } = props;
 
-  const label = connectButtonLabel ? connectButtonLabel : 'Connect Wallet';
+  const label = options?.connectButtonLabel ? options.connectButtonLabel : 'Connect Wallet';
 
-  const user = account ? account : walletAddress;
+  const user = profile ? profile : walletAddress;
 
   const handleDisconnect = () => {
     window.arweaveWallet.disconnect().then(() => {
@@ -51,29 +38,27 @@ export const ConnectWallet = (props: ConnectWalletProps) => {
     <>
       {user ? (
         <Button
-          variant={variant}
-          size={size}
-          colorScheme={colorScheme}
-          css={{ display: 'flex', gap: '$4', ...connectButtonStyles }}
+          variant={options?.connectButtonVariant}
+          size={options?.connectButtonSize}
+          colorScheme={options?.connectButtonColorScheme}
+          css={{ display: 'flex', gap: '$4', ...options?.connectButtonStyles }}
           onClick={handleDisconnect}
         >
           Disconnect
         </Button>
       ) : (
         <ConnectWalletDialog
-          arweaveAccount={arweaveAccount}
           permissions={permissions}
-          arweaveWalletProps={arweaveWalletProps}
+          arweaveWalletProps={options?.arweaveWalletProps}
           appName={appName}
-          arconnectLogo={arconnectLogo}
-          arweaveAppLogo={arweaveAppLogo}
+          profile={profile}
         >
           <Button
-            variant={variant}
-            size={size}
-            colorScheme={colorScheme}
+            variant={options?.connectButtonVariant}
+            size={options?.connectButtonSize}
+            colorScheme={options?.connectButtonColorScheme}
             css={{
-              ...connectButtonStyles,
+              ...options?.connectButtonStyles,
             }}
             disabled={connecting}
           >

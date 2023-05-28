@@ -37,3 +37,18 @@ export type ArweaveConfig = {
   port: number;
   protocol: string;
 };
+
+export interface PermaProfile {
+  address: string;
+  handle: string | undefined;
+  uniqueHandle: string | undefined;
+  bio: string | undefined;
+  avatar: string | undefined;
+  banner: string | undefined;
+  // vouched: boolean;
+}
+
+export type Env = {
+  gateway?: string;
+  // maybe add some cache options here
+};

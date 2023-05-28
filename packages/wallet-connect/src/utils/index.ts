@@ -1,7 +1,4 @@
-import { ArAccount } from 'arweave-account';
-import { getAccount, getAccountHandle } from '../lib';
 import { ColorScheme, ColorSchemeBlackText } from './colorScheme';
-import ArweaveAccount from 'arweave-account';
 
 type Booleanish = boolean | 'true' | 'false';
 
@@ -66,14 +63,4 @@ export const abbreviateAddress = ({ address, options = {} }: AbbreviateAddress) 
   const firstFive = address?.substring(0, startChars);
   const lastFour = address?.substring(address.length - endChars);
   return `${firstFive}${dot.repeat(noOfEllipsis)}${lastFour}`;
-};
-
-export const accountFromAddress = async (
-  address: string,
-  account: ArweaveAccount
-): Promise<ArAccount | undefined> => {
-  const userAccount = await getAccount(address, account);
-  console.log(userAccount);
-
-  return userAccount;
 };

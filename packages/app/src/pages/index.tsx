@@ -1,11 +1,8 @@
 import { ConnectWallet, useConnect } from 'arweave-wallet-ui-test';
 import { Flex, Typography } from '@aura-ui/react';
-import ArweaveAccount from 'arweave-account';
-
-const account = new ArweaveAccount();
 
 export default function Home() {
-  const { walletAddress, account: arAccount, config } = useConnect();
+  const { walletAddress, profile, config } = useConnect();
 
   return (
     <Flex
@@ -19,8 +16,7 @@ export default function Home() {
     >
       <ConnectWallet
         permissions={['ACCESS_ADDRESS', 'ACCESS_ALL_ADDRESSES', 'ACCESS_ARWEAVE_CONFIG']}
-        arweaveAccount={account}
-        appName="Libra"
+        appName="Wallet Test App"
       />
       <Flex direction="column" gap="3">
         <Flex gap="2">
@@ -29,7 +25,7 @@ export default function Home() {
         </Flex>
         <Flex gap="2">
           <Typography css={{ opacity: 0.6 }}>Account Info:</Typography>
-          <Typography>{JSON.stringify(arAccount)}</Typography>
+          <Typography>{profile?.uniqueHandle || walletAddress}</Typography>
         </Flex>
         <Flex gap="2">
           <Typography css={{ opacity: 0.6 }}>Preferred Gateway:</Typography>

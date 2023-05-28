@@ -19,13 +19,12 @@ import { Cross2Icon } from '@radix-ui/react-icons';
 import { useConnect } from '../hooks/useConnect';
 import { Image } from './Image';
 import { useState } from 'react';
-import { abbreviateAddress, accountFromAddress } from '../utils';
+import { abbreviateAddress } from '../utils';
 import { config } from '../utils/config';
-import ArweaveAccount from 'arweave-account';
 import { ArweaveWebWallet } from 'arweave-wallet-connector';
-import { ArweaveConfig, ArweaveWalletProps } from '../types';
+import { ArweaveConfig, ArweaveWalletProps, PermaProfile } from '../types';
 import { ArweaveLogo } from '../Icons/ArweaveLogo';
-// import { isVouched } from 'vouchdao';
+import { account } from '../lib/account';
 
 const arweaveWallet = (props: ArweaveWalletProps) => {
   const { iframeParentNode, logo, name, url = 'arweave.app' } = props;
@@ -92,45 +91,40 @@ const WalletItem = React.forwardRef<HTMLButtonElement, WalletItemProps>(
 interface ConnectWalletDialogProps {
   permissions: PermissionType[];
   children: React.ReactNode;
-  arweaveAccount: ArweaveAccount;
+  profile: PermaProfile | undefined;
   arweaveWalletProps: ArweaveWalletProps | undefined;
   appName?: string;
-  arconnectLogo?: string;
-  arweaveAppLogo?: string;
 }
 
 export const ConnectWalletDialog = (props: ConnectWalletDialogProps) => {
   const [addresses, setAddresses] = useState<string[]>();
   const { setState } = useConnect();
-  const {
-    children,
-    permissions,
-    arweaveAccount,
-    arweaveWalletProps,
-    appName,
-    arconnectLogo,
-    arweaveAppLogo,
-  } = props;
+  const { children, permissions, profile, arweaveWalletProps, appName } = props;
 
   const webWallet = arweaveWallet({ name: appName, ...arweaveWalletProps });
 
   const connectWithArweaveApp = async () => {
-    webWallet.setUrl('https://arweave.app');
-    await webWallet.connect();
+    try {
+      webWallet.setUrl('https://arweave.app');
+      await webWallet.connect();
 
-    const address = webWallet.address;
+      const address = webWallet.address;
 
-    const config = (await webWallet.getArweaveConfig()) as ArweaveConfig;
+      const config = (await webWallet.getArweaveConfig()) as ArweaveConfig;
 
-    if (!address) {
-      console.log('disconnected');
+      if (!address) {
+        console.log('disconnected');
 
-      throw new Error(
-        'Oops something went wrong when connecting with Arweave.app! Please try again.'
-      );
+        throw new Error(
+          'Oops something went wrong when connecting with Arweave.app! Please try again.'
+        );
+      }
+
+      completeConnection(address, config);
+    } catch (error) {
+      setState({ connecting: false });
+      throw new Error(error as any);
     }
-
-    completeConnection(address, config);
   };
 
   const connectWithArconnect = async () => {
@@ -180,35 +174,29 @@ export const ConnectWalletDialog = (props: ConnectWalletDialogProps) => {
   };
 
   const completeConnection = async (address: string, config?: ArweaveConfig) => {
-    // const vouched = await isVouched(address);
+    const gateway = config ? `${config?.protocol}://${config?.host}` : undefined;
+    const acc = account.init({ gateway });
 
-    await accountFromAddress(address, arweaveAccount)
-      .then((account) => {
-        if (account) {
-          setState({ walletAddress: address, account, config: config, connecting: false });
-        } else {
-          setState({ walletAddress: address, config: config, connecting: false });
-        }
-      })
-      .catch((err) => {
-        throw new Error(err);
-      });
+    try {
+      const permaProfile = await acc.get(address);
+      if (permaProfile) {
+        setState({
+          walletAddress: address,
+          profile: permaProfile,
+          config: config,
+          connecting: false,
+        });
+      } else {
+        setState({ walletAddress: address, config: config, connecting: false });
+      }
+    } catch (error) {
+      throw new Error(error as any);
+    }
   };
 
   const handleCompleteConnect = (address: string) => completeConnection(address);
 
   const name = appName ? appName : 'this app';
-
-  const walletLogo = (logo: 'Arweave.app' | 'Arconnect', defaultLogo: string) => {
-    let returnedLogo;
-    if (logo === 'Arweave.app') {
-      returnedLogo = arweaveAppLogo || defaultLogo;
-    } else {
-      returnedLogo = arconnectLogo || defaultLogo;
-    }
-
-    return returnedLogo;
-  };
 
   return (
     <Dialog>
@@ -277,11 +265,7 @@ export const ConnectWalletDialog = (props: ConnectWalletDialogProps) => {
               <>
                 {walletItems.map((wallet) => (
                   <DialogClose key={wallet.name} asChild>
-                    <WalletItem
-                      connect={handleConnect}
-                      name={wallet.name}
-                      logo={walletLogo(wallet.name, wallet.logo)}
-                    />
+                    <WalletItem connect={handleConnect} name={wallet.name} logo={wallet.logo} />
                   </DialogClose>
                 ))}
               </>
