@@ -27,7 +27,7 @@ export const getAccount = async (address: string, env: Env) => {
 const transform = async (node: Transaction): Promise<PermaProfile> => {
   const address = node.owner.address;
   const handle = node.tags.find((x) => x.name === 'Profile-Name')?.value;
-  const uniqueHandle = handle && handle + `#${address.slice(0, 3)}` + address.slice(39, 42);
+  const uniqueHandle = handle && handle + `#${address.slice(0, 3)}` + address.slice(40, 43);
   const bio = node.tags.find((x) => x.name === 'Profile-Bio')?.value;
   const avatar = node.tags.find((x) => x.name === 'Profile-Avatar')?.value;
   const banner = node.tags.find((x) => x.name === 'Profile-Background')?.value;
