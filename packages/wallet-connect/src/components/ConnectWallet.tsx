@@ -2,9 +2,9 @@ import * as React from 'react';
 import { PermissionType } from 'arconnect';
 import { ConnectWalletDialog } from './ConnectWalletDialog';
 import { useConnect } from '../hooks/useConnect';
-import { Button, CSS, ButtonExtendedProps } from '@aura-ui/react';
-import ArweaveAccount from 'arweave-account';
+import { Button, CSS, ButtonExtendedProps, IconButton } from '@aura-ui/react';
 import { ArweaveWalletProps } from '../types';
+import { BsArrowBarRight, BsThreeDots, BsWallet2 } from 'react-icons/bs';
 
 export interface ConnectWalletProps {
   appName?: string;
@@ -16,6 +16,7 @@ export interface ConnectWalletProps {
     connectButtonVariant?: ButtonExtendedProps['variant'];
     connectButtonSize?: ButtonExtendedProps['size'];
     connectButtonColorScheme?: ButtonExtendedProps['colorScheme'];
+    connectButtonType?: 'normal' | 'icon';
     arweaveWalletProps?: ArweaveWalletProps;
   };
 }
@@ -23,6 +24,8 @@ export interface ConnectWalletProps {
 export const ConnectWallet = (props: ConnectWalletProps) => {
   const { setState, profile, walletAddress, connecting, vouched } = useConnect();
   const { options, permissions, appName } = props;
+
+  const type = options?.connectButtonType;
 
   const label = options?.connectButtonLabel ? options.connectButtonLabel : 'Connect Wallet';
 
@@ -37,15 +40,30 @@ export const ConnectWallet = (props: ConnectWalletProps) => {
   return (
     <>
       {user ? (
-        <Button
-          variant={options?.connectButtonVariant}
-          size={options?.connectButtonSize}
-          colorScheme={options?.connectButtonColorScheme}
-          css={{ display: 'flex', gap: '$4', ...options?.connectButtonStyles }}
-          onClick={handleDisconnect}
-        >
-          Disconnect
-        </Button>
+        <>
+          {type && type === 'icon' ? (
+            <IconButton
+              variant={options?.connectButtonVariant}
+              size={options?.connectButtonSize}
+              colorScheme={options?.connectButtonColorScheme}
+              css={{ ...options?.connectButtonStyles }}
+              onClick={handleDisconnect}
+              title="Disconnect wallet"
+            >
+              <BsArrowBarRight />
+            </IconButton>
+          ) : (
+            <Button
+              variant={options?.connectButtonVariant}
+              size={options?.connectButtonSize}
+              colorScheme={options?.connectButtonColorScheme}
+              css={{ display: 'flex', gap: '$4', ...options?.connectButtonStyles }}
+              onClick={handleDisconnect}
+            >
+              Disconnect
+            </Button>
+          )}
+        </>
       ) : (
         <ConnectWalletDialog
           permissions={permissions}
@@ -53,17 +71,32 @@ export const ConnectWallet = (props: ConnectWalletProps) => {
           appName={appName}
           profile={profile}
         >
-          <Button
-            variant={options?.connectButtonVariant}
-            size={options?.connectButtonSize}
-            colorScheme={options?.connectButtonColorScheme}
-            css={{
-              ...options?.connectButtonStyles,
-            }}
-            disabled={connecting}
-          >
-            {connecting ? 'Connecting...' : label}
-          </Button>
+          {type && type === 'icon' ? (
+            <IconButton
+              variant={options?.connectButtonVariant}
+              size={options?.connectButtonSize}
+              colorScheme={options?.connectButtonColorScheme}
+              css={{
+                ...options?.connectButtonStyles,
+              }}
+              disabled={connecting}
+              title="Connect wallet"
+            >
+              {connecting ? <BsThreeDots /> : <BsWallet2 />}
+            </IconButton>
+          ) : (
+            <Button
+              variant={options?.connectButtonVariant}
+              size={options?.connectButtonSize}
+              colorScheme={options?.connectButtonColorScheme}
+              css={{
+                ...options?.connectButtonStyles,
+              }}
+              disabled={connecting}
+            >
+              {connecting ? 'Connecting...' : label}
+            </Button>
+          )}
         </ConnectWalletDialog>
       )}
     </>

@@ -13,6 +13,7 @@ import {
   Typography,
   Link,
   DialogPortal,
+  Box,
 } from '@aura-ui/react';
 import { PermissionType } from 'arconnect';
 import { Cross2Icon } from '@radix-ui/react-icons';
@@ -24,6 +25,7 @@ import { config } from '../utils/config';
 import { ArweaveWebWallet } from 'arweave-wallet-connector';
 import { ArweaveConfig, ArweaveWalletProps, PermaProfile } from '../types';
 import { ArweaveLogo } from '../Icons/ArweaveLogo';
+import { ArconnectLogo } from '../Icons/ArconnectLogo';
 import { account } from '../lib/account';
 
 const arweaveWallet = (props: ArweaveWalletProps) => {
@@ -74,7 +76,13 @@ const WalletItem = React.forwardRef<HTMLButtonElement, WalletItemProps>(
         size="3"
         ref={ref}
       >
-        {name === 'Arweave.app' ? <ArweaveLogo width={50} height={50} /> : <Image src={logo} />}
+        {name === 'Arweave.app' ? (
+          <ArweaveLogo width={50} height={50} />
+        ) : name === 'Arconnect' ? (
+          <ArconnectLogo width={50} height={50} />
+        ) : (
+          <Image src={logo} />
+        )}
         <Typography
           colorScheme={name === 'Arconnect' ? 'violet' : 'slate'}
           contrast={name === 'Arweave.app' ? 'hiContrast' : undefined}
@@ -207,7 +215,7 @@ export const ConnectWalletDialog = (props: ConnectWalletDialogProps) => {
           css={{
             maxWidth: 320,
             left: '50%',
-            px: '$5',
+            px: '$2',
             py: '$3',
             display: 'flex',
             flexDirection: 'column',
@@ -245,11 +253,16 @@ export const ConnectWalletDialog = (props: ConnectWalletDialogProps) => {
               :
             </Typography>
           </DialogDescription>
-          <Flex
-            css={{ p: '$2', boxShadow: '0 0 0 1px $colors$slate5', br: '$4' }}
-            direction="column"
-            gap="3"
-          >
+          <Box
+            css={{
+              width: '200%',
+              height: 1,
+              backgroundColor: '$slate5',
+              mx: '-$5',
+              position: 'relative',
+            }}
+          />
+          <Flex css={{ br: '$4', width: '100%' }} direction="column" gap="3">
             {addresses ? (
               <>
                 <Typography size="1">Connect with one of the following wallets:</Typography>
@@ -261,7 +274,7 @@ export const ConnectWalletDialog = (props: ConnectWalletDialogProps) => {
                       address,
                       options: { startChars: 10, endChars: 8, noOfEllipsis: 4 },
                     })}
-                    logo={`${config.boringAvatars}/28/${address}`}
+                    logo={profile?.avatar || `${config.boringAvatars}/28/${address}`}
                   />
                 ))}
               </>
@@ -275,6 +288,15 @@ export const ConnectWalletDialog = (props: ConnectWalletDialogProps) => {
               </>
             )}
           </Flex>
+          <Box
+            css={{
+              width: '200%',
+              height: 1,
+              backgroundColor: '$slate5',
+              mx: '-$5',
+              position: 'relative',
+            }}
+          />
           <Typography css={{ my: '$2' }} size="2">
             Don't have a wallet?{' '}
             <Link href="https://arconnect.io/" external>

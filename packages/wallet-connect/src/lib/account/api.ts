@@ -8,14 +8,13 @@ export const getAccount = async (address: string, env: Env) => {
     const res = await arweaveGql(
       `${env.gateway ? env.gateway : config.gatewayUrl}/graphql`
     ).getTransactions({
+      owners: [address],
       tags: [
         { name: 'Content-Type', values: ['application/json'] },
         { name: 'Protocol', values: ['PermaProfile-v0.1'] },
       ],
     });
-    const data = res.transactions.edges
-      .filter((edge) => edge.node.owner.address === address)
-      .map((edge) => transform(edge.node as Transaction));
+    const data = res.transactions.edges.map((edge) => transform(edge.node as Transaction));
 
     const profileRes = await Promise.all(data);
     return profileRes[0];
@@ -28,7 +27,7 @@ export const getAccount = async (address: string, env: Env) => {
 const transform = async (node: Transaction): Promise<PermaProfile> => {
   const address = node.owner.address;
   const handle = node.tags.find((x) => x.name === 'Profile-Name')?.value;
-  const uniqueHandle = handle && handle + `#${address.slice(0, 3)}` + address.slice(39, 42);
+  const uniqueHandle = handle && handle + `#${address.slice(0, 3)}` + address.slice(40, 43);
   const bio = node.tags.find((x) => x.name === 'Profile-Bio')?.value;
   const avatar = node.tags.find((x) => x.name === 'Profile-Avatar')?.value;
   const banner = node.tags.find((x) => x.name === 'Profile-Background')?.value;
