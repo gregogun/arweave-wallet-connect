@@ -61,7 +61,7 @@ interface WalletItemProps {
 }
 
 const WalletItem = React.forwardRef<HTMLButtonElement, WalletItemProps>(
-  ({ name, connect }, ref) => {
+  ({ name, logo, connect }, ref) => {
     return (
       <Button
         onClick={() => connect(name)}
@@ -78,8 +78,10 @@ const WalletItem = React.forwardRef<HTMLButtonElement, WalletItemProps>(
       >
         {name === 'Arweave.app' ? (
           <ArweaveLogo width={50} height={50} />
-        ) : (
+        ) : name === 'Arconnect' ? (
           <ArconnectLogo width={50} height={50} />
+        ) : (
+          <Image src={logo} />
         )}
         <Typography
           colorScheme={name === 'Arconnect' ? 'violet' : 'slate'}
@@ -272,7 +274,7 @@ export const ConnectWalletDialog = (props: ConnectWalletDialogProps) => {
                       address,
                       options: { startChars: 10, endChars: 8, noOfEllipsis: 4 },
                     })}
-                    logo={`${config.boringAvatars}/28/${address}`}
+                    logo={profile?.avatar || `${config.boringAvatars}/28/${address}`}
                   />
                 ))}
               </>
