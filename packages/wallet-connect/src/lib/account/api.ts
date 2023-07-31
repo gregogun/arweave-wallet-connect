@@ -8,14 +8,13 @@ export const getAccount = async (address: string, env: Env) => {
     const res = await arweaveGql(
       `${env.gateway ? env.gateway : config.gatewayUrl}/graphql`
     ).getTransactions({
+      owners: [address],
       tags: [
         { name: 'Content-Type', values: ['application/json'] },
         { name: 'Protocol', values: ['PermaProfile-v0.1'] },
       ],
     });
-    const data = res.transactions.edges
-      .filter((edge) => edge.node.owner.address === address)
-      .map((edge) => transform(edge.node as Transaction));
+    const data = res.transactions.edges.map((edge) => transform(edge.node as Transaction));
 
     const profileRes = await Promise.all(data);
     return profileRes[0];
