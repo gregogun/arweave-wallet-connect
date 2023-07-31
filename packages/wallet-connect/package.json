@@ -28,6 +28,7 @@
     "arweave-graphql": "0.0.5",
     "arweave-wallet-connector": "1.0.2",
     "boring-avatars": "1.7.0",
+    "react-icons": "4.10.1",
     "vouchdao": "0.2.6"
   },
   "devDependencies": {

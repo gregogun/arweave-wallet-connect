@@ -92,6 +92,7 @@ importers:
       boring-avatars: 1.7.0
       react: 18.2.0
       react-dom: 18.2.0
+      react-icons: 4.10.1
       tsup: 5.11.7
       typescript: 4.6.4
       vouchdao: 0.2.6
@@ -105,6 +106,7 @@ importers:
       arweave-graphql: 0.0.5
       arweave-wallet-connector: 1.0.2
       boring-avatars: 1.7.0
+      react-icons: 4.10.1_react@18.2.0
       vouchdao: 0.2.6
     devDependencies:
       '@types/node': 18.11.13
@@ -14658,6 +14660,14 @@ packages:
       react-dom: 18.2.0_react@18.2.0
       react-is: 17.0.2
     dev: true
+
+  /react-icons/4.10.1_react@18.2.0:
+    resolution: {integrity: sha512-/ngzDP/77tlCfqthiiGNZeYFACw85fUjZtLbedmJ5DTlNDIwETxhwBzdOJ21zj4iJdvc0J3y7yOsX3PpxAJzrw==}
+    peerDependencies:
+      react: '*'
+    dependencies:
+      react: 18.2.0
+    dev: false
 
   /react-inspector/5.1.1_react@18.2.0:
     resolution: {integrity: sha512-GURDaYzoLbW8pMGXwYPDBIv6nqei4kK7LPRZ9q9HCZF54wqXz/dnylBp/kfE9XmekBhHvLDdcYeyIwSrvtOiWg==}

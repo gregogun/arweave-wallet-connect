@@ -17,6 +17,9 @@ export default function Home() {
       <ConnectWallet
         permissions={['ACCESS_ADDRESS', 'ACCESS_ALL_ADDRESSES', 'ACCESS_ARWEAVE_CONFIG']}
         appName="Wallet Test App"
+        options={{
+          connectButtonType: 'icon',
+        }}
       />
       <Flex direction="column" gap="3">
         <Flex gap="2">
