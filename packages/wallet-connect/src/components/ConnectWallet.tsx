@@ -4,7 +4,7 @@ import { ConnectWalletDialog } from './ConnectWalletDialog';
 import { useConnect } from '../hooks/useConnect';
 import { Button, CSS, ButtonExtendedProps, IconButton } from '@aura-ui/react';
 import { ArweaveWalletProps } from '../types';
-import { BsArrowBarRight, BsThreeDots, BsWallet2 } from 'react-icons/bs';
+import { BsArrowBarRight, BsThreeDots, BsWallet2 } from 'react-icons/bs/index.js';
 
 export interface ConnectWalletProps {
   appName?: string;
