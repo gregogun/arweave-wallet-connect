@@ -152,10 +152,8 @@ const ConnectProvider = ({ children }: ConnectProviderProps) => {
       //   config = await window.arweaveWallet.getArweaveConfig();
       //   console.log(config);
       // }
-      console.log('continued');
     } catch (error) {
       console.error(error);
-      console.log('yo cunt');
     }
 
     if (
