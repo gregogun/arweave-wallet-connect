@@ -5,9 +5,7 @@ import { config } from '../../utils/config';
 
 export const getAccount = async (address: string, env: Env) => {
   try {
-    const res = await arweaveGql(
-      `${env.gateway ? env.gateway : config.gatewayUrl}/graphql`
-    ).getTransactions({
+    const res = await arweaveGql(`${config.gatewayUrl}/graphql`).getTransactions({
       owners: [address],
       tags: [
         { name: 'Content-Type', values: ['application/json'] },

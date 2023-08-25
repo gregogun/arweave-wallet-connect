@@ -1,3 +1,4 @@
+import { PermissionType } from 'arconnect';
 import { State, AppInfo } from 'arweave-wallet-connector';
 
 interface ProfileLinks {
@@ -52,3 +53,10 @@ export type Env = {
   gateway?: string;
   // maybe add some cache options here
 };
+
+export interface ConnectProps {
+  walletProvider: 'arweave.app' | 'arconnect';
+  appName: string;
+  arweaveWalletProps?: ArweaveWalletProps | undefined;
+  permissions?: PermissionType[];
+}
