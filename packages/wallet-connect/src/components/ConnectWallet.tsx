@@ -10,6 +10,11 @@ export interface ConnectWalletProps {
   appName?: string;
   permissions: PermissionType[];
   appLogo?: string;
+  className?: string | undefined;
+  providers?: {
+    arweaveApp: boolean;
+    arconnect: boolean;
+  };
   options?: {
     connectButtonLabel?: string;
     connectButtonStyles?: CSS;
@@ -23,7 +28,11 @@ export interface ConnectWalletProps {
 
 export const ConnectWallet = (props: ConnectWalletProps) => {
   const { setState, profile, walletAddress, connecting, vouched } = useConnect();
-  const { options, permissions, appName } = props;
+  const { options, permissions, appName, providers } = props;
+  const [showConnectDialog, setShowConnectDialog] = React.useState(false);
+
+  const handleShowConnectDialog = () => setShowConnectDialog(true);
+  const handleCancelConnectDialog = () => setShowConnectDialog(false);
 
   const type = options?.connectButtonType;
 
@@ -65,14 +74,10 @@ export const ConnectWallet = (props: ConnectWalletProps) => {
           )}
         </>
       ) : (
-        <ConnectWalletDialog
-          permissions={permissions}
-          arweaveWalletProps={options?.arweaveWalletProps}
-          appName={appName}
-          profile={profile}
-        >
+        <>
           {type && type === 'icon' ? (
             <IconButton
+              onClick={handleShowConnectDialog}
               variant={options?.connectButtonVariant}
               size={options?.connectButtonSize}
               colorScheme={options?.connectButtonColorScheme}
@@ -86,6 +91,7 @@ export const ConnectWallet = (props: ConnectWalletProps) => {
             </IconButton>
           ) : (
             <Button
+              onClick={handleShowConnectDialog}
               variant={options?.connectButtonVariant}
               size={options?.connectButtonSize}
               colorScheme={options?.connectButtonColorScheme}
@@ -97,8 +103,17 @@ export const ConnectWallet = (props: ConnectWalletProps) => {
               {connecting ? 'Connecting...' : label}
             </Button>
           )}
-        </ConnectWalletDialog>
+        </>
       )}
+      <ConnectWalletDialog
+        open={showConnectDialog}
+        onClose={handleCancelConnectDialog}
+        permissions={permissions}
+        arweaveWalletProps={options?.arweaveWalletProps}
+        appName={appName}
+        profile={profile}
+        providers={providers}
+      />
     </>
   );
 };
