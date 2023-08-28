@@ -3,7 +3,7 @@ import { PermissionType } from 'arconnect';
 import { ConnectWalletDialog } from './ConnectWalletDialog';
 import { useConnect } from '../hooks/useConnect';
 import { Button, CSS, ButtonExtendedProps, IconButton } from '@aura-ui/react';
-import { ArweaveWalletProps } from '../types';
+// import { ArweaveWalletProps } from '../types';
 import { BsArrowBarRight, BsThreeDots, BsWallet2 } from 'react-icons/bs/index.js';
 
 export interface ConnectWalletProps {
@@ -22,12 +22,12 @@ export interface ConnectWalletProps {
     connectButtonSize?: ButtonExtendedProps['size'];
     connectButtonColorScheme?: ButtonExtendedProps['colorScheme'];
     connectButtonType?: 'normal' | 'icon';
-    arweaveWalletProps?: ArweaveWalletProps;
   };
+  children?: React.ReactNode;
 }
 
 export const ConnectWallet = (props: ConnectWalletProps) => {
-  const { setState, profile, walletAddress, connecting, vouched } = useConnect();
+  const { setState, profile, walletAddress, connecting } = useConnect();
   const { options, permissions, appName, providers } = props;
   const [showConnectDialog, setShowConnectDialog] = React.useState(false);
 
@@ -46,62 +46,88 @@ export const ConnectWallet = (props: ConnectWalletProps) => {
     });
   };
 
+  const childButton = React.Children.map(props.children, (child) => {
+    if (React.isValidElement(child)) {
+      return React.cloneElement(child, {
+        ...child.props,
+        onClick: (event: React.MouseEvent<HTMLButtonElement>) => {
+          if (walletAddress) {
+            handleDisconnect();
+            handleCancelConnectDialog();
+          } else {
+            handleShowConnectDialog();
+          }
+
+          if (child.props.onClick) {
+            child.props.onClick(event);
+          }
+        },
+      });
+    }
+  });
+
   return (
     <>
-      {user ? (
-        <>
-          {type && type === 'icon' ? (
-            <IconButton
-              variant={options?.connectButtonVariant}
-              size={options?.connectButtonSize}
-              colorScheme={options?.connectButtonColorScheme}
-              css={{ ...options?.connectButtonStyles }}
-              onClick={handleDisconnect}
-              title="Disconnect wallet"
-            >
-              <BsArrowBarRight />
-            </IconButton>
-          ) : (
-            <Button
-              variant={options?.connectButtonVariant}
-              size={options?.connectButtonSize}
-              colorScheme={options?.connectButtonColorScheme}
-              css={{ display: 'flex', gap: '$4', ...options?.connectButtonStyles }}
-              onClick={handleDisconnect}
-            >
-              Disconnect
-            </Button>
-          )}
-        </>
+      {props.children ? (
+        childButton
       ) : (
         <>
-          {type && type === 'icon' ? (
-            <IconButton
-              onClick={handleShowConnectDialog}
-              variant={options?.connectButtonVariant}
-              size={options?.connectButtonSize}
-              colorScheme={options?.connectButtonColorScheme}
-              css={{
-                ...options?.connectButtonStyles,
-              }}
-              disabled={connecting}
-              title="Connect wallet"
-            >
-              {connecting ? <BsThreeDots /> : <BsWallet2 />}
-            </IconButton>
+          {user ? (
+            <>
+              {type && type === 'icon' ? (
+                <IconButton
+                  variant={options?.connectButtonVariant}
+                  size={options?.connectButtonSize}
+                  colorScheme={options?.connectButtonColorScheme}
+                  css={{ ...options?.connectButtonStyles }}
+                  onClick={handleDisconnect}
+                  title="Disconnect wallet"
+                >
+                  <BsArrowBarRight />
+                </IconButton>
+              ) : (
+                <Button
+                  variant={options?.connectButtonVariant}
+                  size={options?.connectButtonSize}
+                  colorScheme={options?.connectButtonColorScheme}
+                  css={{ display: 'flex', gap: '$4', ...options?.connectButtonStyles }}
+                  onClick={handleDisconnect}
+                >
+                  Disconnect
+                </Button>
+              )}
+            </>
           ) : (
-            <Button
-              onClick={handleShowConnectDialog}
-              variant={options?.connectButtonVariant}
-              size={options?.connectButtonSize}
-              colorScheme={options?.connectButtonColorScheme}
-              css={{
-                ...options?.connectButtonStyles,
-              }}
-              disabled={connecting}
-            >
-              {connecting ? 'Connecting...' : label}
-            </Button>
+            <>
+              {type && type === 'icon' ? (
+                <IconButton
+                  onClick={handleShowConnectDialog}
+                  variant={options?.connectButtonVariant}
+                  size={options?.connectButtonSize}
+                  colorScheme={options?.connectButtonColorScheme}
+                  css={{
+                    ...options?.connectButtonStyles,
+                  }}
+                  disabled={connecting}
+                  title="Connect wallet"
+                >
+                  {connecting ? <BsThreeDots /> : <BsWallet2 />}
+                </IconButton>
+              ) : (
+                <Button
+                  onClick={handleShowConnectDialog}
+                  variant={options?.connectButtonVariant}
+                  size={options?.connectButtonSize}
+                  colorScheme={options?.connectButtonColorScheme}
+                  css={{
+                    ...options?.connectButtonStyles,
+                  }}
+                  disabled={connecting}
+                >
+                  {connecting ? 'Connecting...' : label}
+                </Button>
+              )}
+            </>
           )}
         </>
       )}
@@ -109,7 +135,6 @@ export const ConnectWallet = (props: ConnectWalletProps) => {
         open={showConnectDialog}
         onClose={handleCancelConnectDialog}
         permissions={permissions}
-        arweaveWalletProps={options?.arweaveWalletProps}
         appName={appName}
         profile={profile}
         providers={providers}

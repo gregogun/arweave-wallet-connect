@@ -15,7 +15,7 @@ export default function Home() {
       }}
       gap="10"
     >
-      {/* <ConnectWallet
+      <ConnectWallet
         permissions={[
           'ACCESS_ADDRESS',
           'ACCESS_ALL_ADDRESSES',
@@ -24,43 +24,19 @@ export default function Home() {
           'ACCESS_PUBLIC_KEY',
         ]}
         appName="Wallet Test App"
-        providers={{
-          arconnect: false,
-          arweaveApp: true,
-        }}
-      /> */}
-      {walletAddress ? (
-        <Button onClick={disconnect} colorScheme="crimson">
-          Disconnect
+      >
+        <Button onClick={() => console.log('hello')} size="3" colorScheme="brown">
+          {walletAddress ? 'Disconnect' : 'Connect Wallet'}
         </Button>
-      ) : (
-        <Button
-          onClick={() =>
-            connect({
-              appName: 'Test app',
-              walletProvider: 'arconnect',
-              permissions: [
-                'ACCESS_ADDRESS',
-                'ACCESS_ALL_ADDRESSES',
-                'ACCESS_ARWEAVE_CONFIG',
-                'DISPATCH',
-                'ACCESS_PUBLIC_KEY',
-              ],
-            })
-          }
-          colorScheme="crimson"
-        >
-          {connecting ? 'Connecting...' : 'Connect Wallet'}
-        </Button>
-      )}
+      </ConnectWallet>
       <Flex direction="column" gap="3">
         <Flex gap="2">
           <Typography css={{ opacity: 0.6 }}>Wallet Address:</Typography>
           <Typography>{walletAddress}</Typography>
         </Flex>
         <Flex gap="2">
-          <Typography css={{ opacity: 0.6 }}>Account Info:</Typography>
-          <Typography>{profile?.uniqueHandle || walletAddress}</Typography>
+          <Typography css={{ opacity: 0.6 }}>Account Handle:</Typography>
+          <Typography>{profile?.uniqueHandle}</Typography>
         </Flex>
         <Flex gap="2">
           <Typography css={{ opacity: 0.6 }}>Preferred Gateway:</Typography>

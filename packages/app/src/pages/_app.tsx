@@ -1,7 +1,8 @@
-import type { AppProps } from 'next/app';
+import type AppProps from 'next/app';
 import { ConnectProvider } from 'arweave-wallet-ui-test';
 import { ThemeProvider } from 'next-themes';
 import { darkTheme, globalCss } from '@aura-ui/react';
+import { ArweaveWebWallet } from 'arweave-wallet-connector';
 
 const globalStyles = globalCss({
   '*, *::before, *::after': {
@@ -30,9 +31,14 @@ const globalStyles = globalCss({
 
 globalStyles();
 
+const webWallet = new ArweaveWebWallet({
+  name: 'wavehub',
+  logo: `${typeof window !== 'undefined' && window.location.origin}/img/logo_text.svg`,
+});
+
 export default function App({ Component, pageProps }: AppProps) {
   return (
-    <ConnectProvider>
+    <ConnectProvider webWallet={webWallet}>
       <ThemeProvider
         disableTransitionOnChange
         attribute="class"
