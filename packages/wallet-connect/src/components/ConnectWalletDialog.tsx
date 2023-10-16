@@ -8,25 +8,20 @@ import {
   DialogOverlay,
   Button,
   IconButton,
-  DialogTrigger,
   Flex,
   Typography,
   Link,
   DialogPortal,
   Box,
+  Checkbox,
 } from '@aura-ui/react';
 import { PermissionType } from 'arconnect';
 import { Cross2Icon } from '@radix-ui/react-icons';
 import { useConnect } from '../hooks/useConnect';
-import { Image } from './Image';
-import { useState } from 'react';
-import { abbreviateAddress } from '../utils';
-import { config as appConfig } from '../utils/config';
-import { ArweaveWebWallet } from 'arweave-wallet-connector';
-import { ArweaveConfig, ArweaveWalletProps, PermaProfile } from '../types';
+import { PermaProfile } from '../types';
 import { ArweaveLogo } from '../Icons/ArweaveLogo';
 import { ArconnectLogo } from '../Icons/ArconnectLogo';
-import { account } from '../lib/account';
+import { ConnectIcon } from '../Icons/ConnectIcon';
 
 interface WalletServiceProps {
   name: 'Arweave.app' | 'Arconnect';
@@ -52,23 +47,6 @@ interface WalletItemProps {
 
 const WalletItem = React.forwardRef<HTMLButtonElement, WalletItemProps>(
   ({ name, logo, connect }, ref) => {
-    const [walletName, setWalletName] = useState<string>();
-
-    const isAddress = name !== 'Arweave.app' && name !== 'Arconnect';
-
-    const getWalletName = async (name: string) => {
-      const walletNames = await window.arweaveWallet.getWalletNames();
-
-      const wallet = walletNames[name];
-      setWalletName(wallet);
-    };
-
-    React.useEffect(() => {
-      if (isAddress) {
-        getWalletName(name);
-      }
-    }, []);
-
     return (
       <Button
         onClick={() => connect(name.toLowerCase())}
@@ -80,34 +58,21 @@ const WalletItem = React.forwardRef<HTMLButtonElement, WalletItemProps>(
           gap: '$2',
           fontWeight: '$5',
           letterSpacing: '-0.4px',
-          // '& svg': { size: '$7', color: '$slate12' },
-          color: name === 'Arconnect' ? '#fff' : name === 'Arweave.app' ? '$slate1' : '$slate11',
+          '& svg': { size: '$7', color: name === 'Arconnect' ? '#fff' : '$slate1' },
+          color: name === 'Arconnect' ? '#fff' : '$slate1',
           backgroundColor:
             name === 'Arconnect' ? '$violet9' : name === 'Arweave.app' ? '$slate12' : '$slate2',
 
           '&:hover': {
             backgroundColor:
               name === 'Arconnect' ? '$violet10' : name === 'Arweave.app' ? '$slate11' : '$slate4',
-
-            color: isAddress ? '$slate12' : undefined,
           },
-
-          justifyContent: isAddress ? 'start' : 'center',
-
-          textOverflow: 'ellipsis',
         }}
         size="3"
         ref={ref}
       >
-        {isAddress && <Image src={logo} />}
-        Connect with{' '}
-        {isAddress
-          ? walletName ||
-            abbreviateAddress({
-              address: name,
-              options: { startChars: 8, endChars: 8, noOfEllipsis: 4 },
-            })
-          : name}
+        {name === 'Arweave.app' ? <ArweaveLogo /> : <ArconnectLogo />}
+        Connect with {name}
       </Button>
     );
   }
@@ -126,7 +91,8 @@ interface ConnectWalletDialogProps {
 }
 
 export const ConnectWalletDialog = (props: ConnectWalletDialogProps) => {
-  const { connect, walletAddress, addresses, completeConnection, setState } = useConnect();
+  const { connect, walletAddress, addresses, completeConnection, setState, reconnect } =
+    useConnect();
   const {
     permissions,
     profile,
@@ -134,21 +100,14 @@ export const ConnectWalletDialog = (props: ConnectWalletDialogProps) => {
     providers = { arconnect: true, arweaveApp: true },
   } = props;
 
-  React.useEffect(() => {
-    if (walletAddress) {
-      props.onClose();
-    }
-  }, [walletAddress]);
-
   const handleConnect = (name: string) => {
+    props.onClose();
     return connect({
       appName: appName || 'this app',
       walletProvider: name as 'arweave.app' | 'arconnect',
       permissions,
     });
   };
-
-  const handleCompleteConnect = (address: string) => completeConnection(address);
 
   const providerName = (name: string) => {
     if (name === 'Arconnect') {
@@ -163,7 +122,7 @@ export const ConnectWalletDialog = (props: ConnectWalletDialogProps) => {
     <Dialog
       open={props.open}
       onOpenChange={() => {
-        setState({});
+        setState((prevValues) => ({ ...prevValues }));
         props.onClose();
       }}
     >
@@ -178,8 +137,7 @@ export const ConnectWalletDialog = (props: ConnectWalletDialogProps) => {
             py: '$5',
             display: 'flex',
             flexDirection: 'column',
-            gap: '$10',
-            // textAlign: 'center',
+            gap: '$5',
             br: '$4',
           }}
         >
@@ -203,17 +161,23 @@ export const ConnectWalletDialog = (props: ConnectWalletDialogProps) => {
               Connect a Wallet
             </Typography>
           </DialogTitle>
-          {!addresses && (
-            <DialogDescription asChild>
-              <Typography css={{ textAlign: 'center', my: '$3' }} size="4">
-                Choose a wallet to connect to <br />
-                <Typography size="4" as="span" weight="6" contrast="hiContrast">
-                  {appName || 'this app'}
-                </Typography>
-                :
+          <Flex
+            css={{
+              width: '100%',
+            }}
+            justify="center"
+          >
+            <ConnectIcon width={150} height={150} />
+          </Flex>
+          <DialogDescription asChild>
+            <Typography css={{ textAlign: 'center' }} size="4">
+              Choose a wallet to connect to <br />
+              <Typography size="4" as="span" weight="6" contrast="hiContrast">
+                {appName || 'this app'}
               </Typography>
-            </DialogDescription>
-          )}
+              :
+            </Typography>
+          </DialogDescription>
           {/* <Box
             css={{
               $$minusMargin: '28px',
@@ -225,31 +189,30 @@ export const ConnectWalletDialog = (props: ConnectWalletDialogProps) => {
             }}
           /> */}
           <Flex css={{ br: '$4', width: '100%' }} direction="column" gap="2">
-            {addresses ? (
-              <>
-                <Typography size="3" css={{ textAlign: 'center', my: '$3' }}>
-                  Connect with one of the following wallets:
-                </Typography>
-                {addresses.map((address) => (
-                  <WalletItem
-                    key={address}
-                    connect={() => handleCompleteConnect(address)}
-                    name={address}
-                    logo={profile?.avatar || `${appConfig.boringAvatars}/28/${address}`}
-                  />
-                ))}
-              </>
-            ) : (
-              <>
-                {walletItems
-                  .filter((walletItem) => walletItem.name === providerName(walletItem.name))
-                  .map((wallet) => (
-                    <DialogClose key={wallet.name} asChild>
-                      <WalletItem connect={handleConnect} name={wallet.name} logo={wallet.logo} />
-                    </DialogClose>
-                  ))}
-              </>
-            )}
+            {walletItems
+              .filter((walletItem) => walletItem.name === providerName(walletItem.name))
+              .map((wallet) => (
+                <DialogClose key={wallet.name} asChild>
+                  <WalletItem connect={handleConnect} name={wallet.name} logo={wallet.logo} />
+                </DialogClose>
+              ))}
+            <Checkbox
+              defaultChecked={reconnect}
+              onCheckedChange={(e) => {
+                if (e) {
+                  setState((prevValues) => ({ ...prevValues, reconnect: true }));
+                } else {
+                  setState((prevValues) => ({ ...prevValues, reconnect: false }));
+                }
+              }}
+              size="3"
+              variant="outline"
+              css={{
+                my: '$3',
+              }}
+            >
+              Stay connected (Arweave.app)
+            </Checkbox>
             <Link
               css={{ color: '$slate11', textAlign: 'center', my: '$5' }}
               href="https://arconnect.io/"
