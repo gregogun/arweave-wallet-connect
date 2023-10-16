@@ -1,30 +1,27 @@
 import { ArAccount } from 'arweave-account';
-import React, { useState } from 'react';
-import {
-  ArweaveConfig,
-  ArweaveWalletProps,
-  ConnectProps,
-  PermaProfile,
-  Vouched,
-  WebWallet,
-} from '../types';
-import { ArweaveWebWallet, ArweaveApi } from 'arweave-wallet-connector';
+import React, { useEffect, useState } from 'react';
+import { ArweaveConfig, ConnectProps, PermaProfile, Vouched, WebWallet } from '../types';
 import { account } from '../lib/account';
 import { PermissionType } from 'arconnect';
+import { profile } from 'console';
 
 const ConnectContext = React.createContext<{
   walletAddress?: string;
   addresses?: string[];
   profile?: PermaProfile;
   connecting?: boolean;
+  reconnect?: boolean;
+  currentProvider?: 'arweave.app' | 'arconnect';
   vouched?: Vouched;
   config?: ArweaveConfig;
   connect: (props: ConnectProps) => void;
   disconnect: () => void;
-  completeConnection: (address: string, config?: ArweaveConfig) => void;
+  completeConnection: (address: string, addresses: [], config?: ArweaveConfig) => void;
   setState: React.Dispatch<
     React.SetStateAction<{
       connecting?: boolean;
+      reconnect?: boolean;
+      currentProvider?: 'arweave.app' | 'arconnect';
       walletAddress?: string | undefined;
       addresses?: string[] | [];
       profile?: PermaProfile | undefined;
@@ -43,12 +40,22 @@ const ConnectContext = React.createContext<{
 interface ConnectProviderProps {
   webWallet?: typeof WebWallet;
   includeProfile?: boolean;
+  shouldReconnect?: string | null;
+  detectWalletSwitch?: boolean;
   children: React.ReactNode;
 }
 
-const ConnectProvider = ({ children, webWallet, includeProfile }: ConnectProviderProps) => {
+const ConnectProvider = ({
+  children,
+  webWallet,
+  includeProfile,
+  shouldReconnect,
+  detectWalletSwitch,
+}: ConnectProviderProps) => {
   const [state, setState] = useState<{
     connecting?: boolean;
+    reconnect?: boolean;
+    currentProvider?: 'arweave.app' | 'arconnect';
     walletAddress?: string;
     addresses?: string[];
     profile?: PermaProfile;
@@ -58,9 +65,90 @@ const ConnectProvider = ({ children, webWallet, includeProfile }: ConnectProvide
     connecting: false,
   });
 
+  useEffect(() => {
+    window.addEventListener('walletSwitch', (e) => handleWalletSwitch(e));
+    return window.removeEventListener('walletSwitch', handleWalletSwitch);
+  }, []);
+
+  const handleWalletSwitch = (e: CustomEvent<{ address: string }>) => {
+    const address = e.detail.address;
+    if (detectWalletSwitch) {
+      setState((prevValues) => ({ ...prevValues, walletAddress: address }));
+    }
+  };
+
+  useEffect(() => {
+    if (shouldReconnect) {
+      setState((prevValues) => ({
+        ...prevValues,
+        reconnect: true,
+        currentProvider: shouldReconnect as 'arweave.app' | 'arconnect',
+        connecting: true,
+      }));
+
+      if (shouldReconnect === 'arweave.app') {
+        handleArweaveAppAutoConnect();
+      } else {
+        handleArconnectAutoConnect();
+      }
+    } else {
+      setState((prevValues) => ({ ...prevValues, reconnect: false }));
+    }
+  }, [shouldReconnect]);
+
+  const handleArweaveAppAutoConnect = async () => {
+    webWallet?.on('connect', async (params) => {
+      let permaProfile: PermaProfile | undefined = undefined;
+
+      if (includeProfile) {
+        const acc = account.init({ gateway: undefined });
+        permaProfile = await acc.get(params);
+      }
+
+      if (permaProfile) {
+        setState((prevValues) => ({
+          ...prevValues,
+          walletAddress: params,
+          profile: permaProfile,
+          connecting: false,
+        }));
+      } else {
+        setState((prevValues) => ({ ...prevValues, walletAddress: params, connecting: false }));
+      }
+    });
+  };
+
+  const handleArconnectAutoConnect = async () => {
+    if (shouldReconnect && shouldReconnect === 'arconnect') {
+      try {
+        const address = await window.arweaveWallet.getActiveAddress();
+
+        let permaProfile: PermaProfile | undefined = undefined;
+
+        if (includeProfile) {
+          const acc = account.init({ gateway: undefined });
+          permaProfile = await acc.get(address);
+        }
+
+        if (permaProfile) {
+          setState((prevValues) => ({
+            ...prevValues,
+            walletAddress: address,
+            profile: permaProfile,
+            connecting: false,
+          }));
+        } else {
+          setState((prevValues) => ({ ...prevValues, walletAddress: address, connecting: false }));
+        }
+      } catch (error) {
+        console.error(error);
+        setState((prevValues) => ({ ...prevValues, connecting: false }));
+      }
+    }
+  };
+
   const connect = async (props: ConnectProps) => {
     try {
-      setState({ connecting: true });
       if (props.walletProvider === 'arweave.app') {
         await connectWithArweaveApp(props.permissions);
       }
@@ -69,7 +157,7 @@ const ConnectProvider = ({ children, webWallet, includeProfile }: ConnectProvide
       }
     } catch (e) {
       console.error(e);
-      setState({ connecting: false });
+      setState((prevValues) => ({ ...prevValues, connecting: false }));
     }
   };
 
@@ -77,6 +165,8 @@ const ConnectProvider = ({ children, webWallet, includeProfile }: ConnectProvide
     if (!webWallet) {
       throw new Error('Must provide an instance of ArweaveWebWallet');
     }
+
+    setState((prevValues) => ({ ...prevValues, currentProvider: 'arweave.app' }));
 
     try {
       if (!webWallet.url) {
@@ -99,9 +189,8 @@ const ConnectProvider = ({ children, webWallet, includeProfile }: ConnectProvide
         );
       }
 
-      completeConnection(address, config);
+      completeConnection(address, [], config);
     } catch (error) {
-      setState({ connecting: false });
       throw new Error(error as any);
     }
   };
@@ -111,64 +200,65 @@ const ConnectProvider = ({ children, webWallet, includeProfile }: ConnectProvide
       throw new Error('You must at least add one permission');
     }
 
+    setState((preValues) => ({ ...preValues, currentProvider: 'arconnect' }));
+
     let currentPermissions: PermissionType[] = [];
 
     let address = '';
     let config = {} as ArweaveConfig;
+    let addresses: string[] = [];
 
     currentPermissions = await window.arweaveWallet.getPermissions();
 
-    if (currentPermissions.length <= 0) {
+    try {
+      if (currentPermissions.length <= 0) {
+        await window.arweaveWallet.connect(requestedPermissions);
+
+        address = await window.arweaveWallet.getActiveAddress();
+
+        currentPermissions = await window.arweaveWallet.getPermissions();
+
+        if (currentPermissions.includes('ACCESS_ALL_ADDRESSES')) {
+          addresses = await window.arweaveWallet.getAllAddresses();
+        }
+
+        if (currentPermissions.includes('ACCESS_ARWEAVE_CONFIG')) {
+          config = await window.arweaveWallet.getArweaveConfig();
+        }
+
+        await completeConnection(address, addresses, config);
+      } else {
+        address = await window.arweaveWallet.getActiveAddress();
+
+        if (currentPermissions.includes('ACCESS_ALL_ADDRESSES')) {
+          addresses = await window.arweaveWallet.getAllAddresses();
+        }
+
+        if (currentPermissions.includes('ACCESS_ARWEAVE_CONFIG')) {
+          config = await window.arweaveWallet.getArweaveConfig();
+        }
+
+        await completeConnection(address, addresses, config);
+      }
+    } catch (error) {
+      console.error(error);
       await window.arweaveWallet.connect(requestedPermissions);
-
-      currentPermissions = await window.arweaveWallet.getPermissions();
-
-      if (currentPermissions.includes('ACCESS_ALL_ADDRESSES')) {
-        const addresses = await window.arweaveWallet.getAllAddresses();
-
-        if (currentPermissions.includes('ACCESS_ARWEAVE_CONFIG')) {
-          config = await window.arweaveWallet.getArweaveConfig();
-        }
-
-        setState({ addresses, config });
-      } else {
-        if (currentPermissions.includes('ACCESS_ADDRESS')) {
-          address = await window.arweaveWallet.getActiveAddress();
-        }
-
-        if (currentPermissions.includes('ACCESS_ARWEAVE_CONFIG')) {
-          config = await window.arweaveWallet.getArweaveConfig();
-        }
-
-        completeConnection(address, config);
-      }
-    } else {
-      if (currentPermissions.includes('ACCESS_ALL_ADDRESSES')) {
-        const addresses = await window.arweaveWallet.getAllAddresses();
-
-        if (currentPermissions.includes('ACCESS_ARWEAVE_CONFIG')) {
-          config = await window.arweaveWallet.getArweaveConfig();
-        }
-
-        setState({ addresses, config });
-      } else {
-        if (currentPermissions.includes('ACCESS_ADDRESS')) {
-          address = await window.arweaveWallet.getActiveAddress();
-        }
-
-        if (currentPermissions.includes('ACCESS_ARWEAVE_CONFIG')) {
-          config = await window.arweaveWallet.getArweaveConfig();
-        }
-        completeConnection(address, config);
-      }
     }
   };
 
-  const completeConnection = async (address: string, config?: ArweaveConfig) => {
+  const completeConnection = async (
+    address: string,
+    addresses: string[],
+    config?: ArweaveConfig
+  ) => {
     const walletConfig = config && `${config?.protocol}://${config?.host}`;
     const stateConfig = state.config && `${state.config?.protocol}://${state.config?.host}`;
     const gateway = walletConfig || stateConfig || undefined;
     let permaProfile: PermaProfile | undefined = undefined;
+
+    if (!address) {
+      throw new Error('No address found');
+    }
 
     if (includeProfile) {
       const acc = account.init({ gateway });
@@ -176,20 +266,32 @@ const ConnectProvider = ({ children, webWallet, includeProfile }: ConnectProvide
     }
 
     if (permaProfile) {
-      setState({
+      setState((prevValues) => ({
+        ...prevValues,
         walletAddress: address,
+        addresses,
         profile: permaProfile,
-        config,
+        config: config || state.config,
         connecting: false,
-      });
+      }));
     } else {
-      setState({ walletAddress: address, config: config || state.config, connecting: false });
+      setState((prevValues) => ({
+        ...prevValues,
+        walletAddress: address,
+        addresses,
+        config: config || state.config,
+        connecting: false,
+      }));
     }
   };
 
   const disconnect = () => {
     window.arweaveWallet.disconnect().then(() => {
-      setState({ walletAddress: '' });
+      setState((prevValues) => ({
+        walletAddress: '',
+        reconnect: prevValues.reconnect,
+        currentProvider: prevValues.currentProvider,
+      }));
     });
   };
 
@@ -200,6 +302,8 @@ const ConnectProvider = ({ children, webWallet, includeProfile }: ConnectProvide
         addresses: state.addresses,
         profile: state.profile,
         connecting: state.connecting,
+        reconnect: state.reconnect,
+        currentProvider: state.currentProvider,
         setState: setState,
         vouched: state.vouched,
         config: state.config,
